@@ -152,4 +152,32 @@ public class FirstTest {
     private boolean isElementPresent(By by) {
         return driver.findElements(by).size() == 1;
     }
+
+    /*
+    Написать функцию, которая проверяет наличие текста “Search…” в строке поиска перед вводом текста
+     и помечает тест упавшим, если такого текста нет.
+     */
+    private void validateSearchElementText() {
+        WebElement searchElement = waitForElementToBePresent(By.id("org.wikipedia:id/search_src_text"),
+                "Unable to locate 'Search...' input",
+                5);
+        Assert.assertEquals("Unexpected 'Search...' field default text is displayed",
+                "Search…",
+                searchElement.getAttribute("text")
+        );
+    }
+
+    //more general methods to compare any element text attribute value with given expected text
+    //and mark test as 'failed' if text comparison fails
+    private void validateElementText(WebElement element, String expectedText) {
+        Assert.assertEquals("Actual element text does not match expected value",
+                expectedText,
+                element.getAttribute("text"));
+    }
+
+    private void waitForElementAndValidateText(By by, String errorMessage, long timeoutInSeconds, String expectedText) {
+        WebElement element = waitForElementToBePresent(by, errorMessage, timeoutInSeconds);
+        validateElementText(element, expectedText);
+    }
+
 }
