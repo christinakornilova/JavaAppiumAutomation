@@ -11,6 +11,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FirstTest {
 
@@ -115,10 +117,76 @@ public class FirstTest {
         );
     }
 
+    @Test
+    public void testSearchResultCancellation() {
+        waitForElementAndClick(By.id("org.wikipedia:id/search_container"),
+                "Unable to locate 'Search Wikipedia' input",
+                5
+        );
+
+        waitForElementAndSendKeys(By.xpath("//*[contains(@text,'Search…')]"),
+                "Java",
+                "Unable to locate search input",
+                5
+        );
+
+        driver.hideKeyboard();
+
+        //wait for search results
+        waitForElementToBePresent(
+                By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']"),
+                "Unable to locate search results",
+                15
+        );
+
+        //get search results to list
+        String listOfSearchResultsXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_title']";
+        List<WebElement> listOfSearchResults = waitForListOfElementsToBePresent(
+                By.xpath(listOfSearchResultsXpath),
+                "Unable to locate search results list",
+                10
+        );
+
+        //verify that search results list is not empty
+        Assert.assertTrue("List is empty",
+                getSearchResultsCount(listOfSearchResults) > 0);
+
+        //clear search
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_close_btn"),
+                "Unable to locate X clear search link",
+                15
+        );
+
+        driver.hideKeyboard();
+
+        //check that Search... element contains default text now
+        validateSearchElementText();
+
+        Assert.assertFalse("Search results are still present on page",
+                isElementPresent(By.xpath(listOfSearchResultsXpath))
+        );
+
+        //verify that empty search result is displayed on page now
+        Assert.assertTrue("Unable to locate empty search result list element",
+                isElementPresent(By.xpath("//*[@resource-id='org.wikipedia:id/search_empty_container']"))
+        );
+    }
+
+    private int getSearchResultsCount(List<WebElement> list) {
+        return list.size();
+    }
+
     private WebElement waitForElementToBePresent(By by, String errorMessage, long timeoutInSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, timeoutInSeconds);
         wait.withMessage(errorMessage + "\n");
         return wait.until(ExpectedConditions.presenceOfElementLocated(by));
+    }
+
+    private List<WebElement> waitForListOfElementsToBePresent (By by, String errorMessage, long timeoutInSeconds) {
+        WebDriverWait wait = new WebDriverWait(driver, timeoutInSeconds);
+        wait.withMessage(errorMessage + "\n");
+        return new ArrayList<>(wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(by)));
     }
 
     private WebElement waitForElementToBePresent(By by, String errorMessage) {
