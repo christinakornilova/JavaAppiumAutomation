@@ -173,6 +173,21 @@ public class FirstTest {
         );
     }
 
+    @Test
+    public void testSearchResultsValidation() {
+        String word = "Java";
+
+        //fill the list with search results;
+        List<WebElement> listOfSearchResults = executeSearch(word);
+
+        //check that each search result contains given word
+        for(WebElement element : listOfSearchResults) {
+            Assert.assertTrue("Search line does not contain appropriate word " + word,
+                    element.getText().contains(word)
+            );
+        }
+    }
+
     private int getSearchResultsCount(List<WebElement> list) {
         return list.size();
     }
@@ -246,6 +261,42 @@ public class FirstTest {
     private void waitForElementAndValidateText(By by, String errorMessage, long timeoutInSeconds, String expectedText) {
         WebElement element = waitForElementToBePresent(by, errorMessage, timeoutInSeconds);
         validateElementText(element, expectedText);
+    }
+
+    private List<WebElement> executeSearch(String searchWord) {
+        waitForElementAndClick(By.id("org.wikipedia:id/search_container"),
+                "Unable to locate 'Search Wikipedia' input",
+                5
+        );
+
+        waitForElementAndSendKeys(By.xpath("//*[contains(@text,'Search…')]"),
+                searchWord,
+                "Unable to locate search input",
+                5
+        );
+
+        driver.hideKeyboard();
+
+        //wait for search results
+        waitForElementToBePresent(
+                By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']"),
+                "Unable to locate search results",
+                15
+        );
+
+        //get search results to list
+        String listOfSearchResultsXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_title']";
+        List<WebElement> listOfSearchResults = waitForListOfElementsToBePresent(
+                By.xpath(listOfSearchResultsXpath),
+                "Unable to locate search results list",
+                5
+        );
+
+        //verify that search results list is not empty
+        Assert.assertTrue("List is empty",
+                getSearchResultsCount(listOfSearchResults) > 0);
+
+        return listOfSearchResults;
     }
 
 }
