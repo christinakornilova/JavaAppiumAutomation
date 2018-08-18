@@ -183,7 +183,7 @@ public class FirstTest {
         //check that each search result contains given word
         for(WebElement element : listOfSearchResults) {
             Assert.assertTrue("Search line does not contain appropriate word " + word,
-                    element.getText().contains(word)
+                    element.getText().toLowerCase().contains(word.toLowerCase())
             );
         }
     }
