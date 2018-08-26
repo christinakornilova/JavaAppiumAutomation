@@ -534,6 +534,21 @@ public class FirstTest {
         );
     }
 
+    @Test
+    public void testAssertArticleTitlePresence() {
+        String keyWord = "Three Days Grace";
+        search(keyWord);
+
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_description'][@text='Canadian band']"),
+                "Unable to locate article in the list searching by '" + keyWord + "'",
+                5
+        );
+
+        String articleTitleXpath = "//*[@resource-id='org.wikipedia:id/view_page_title_text']";
+        assertElementPresent(By.xpath(articleTitleXpath), ": unable to locate article title");
+    }
+
     private int getSearchResultsCount(List<WebElement> list) {
         return list.size();
     }
@@ -799,6 +814,13 @@ public class FirstTest {
     private void assertElementNotPresent(By by, String errorMessage) {
         if(getAmountOfElements(by) > 0) {
             String defaultMessage = "An element '" + by.toString() + "' supposed to be not present";
+            throw new AssertionError(defaultMessage + " " + errorMessage);
+        }
+    }
+
+    private void assertElementPresent(By by, String errorMessage) {
+        if(getAmountOfElements(by) == 0) {
+            String defaultMessage = "An element '" + by.toString() + "' supposed to be present";
             throw new AssertionError(defaultMessage + " " + errorMessage);
         }
     }
