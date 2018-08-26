@@ -453,6 +453,87 @@ public class FirstTest {
         );
     }
 
+    @Test
+    public void testSaveTwoArticles() {
+
+        String searchLine = "Java";
+
+        //Add first article to the list
+        String articleIdentifier = "Object-oriented programming language";
+        String articleTitleXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='" + articleIdentifier + "']";
+
+        driver.resetApp();
+
+        search(searchLine);
+
+        openArticle(articleTitleXpath, searchLine);
+
+        String folderName = "Learning programming";
+        addArticleToReadingList(folderName);
+
+        //Add second article
+        articleIdentifier = "Java (software platform)";
+        String secondArticleTitleXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='" + articleIdentifier + "']";
+
+        search(searchLine);
+
+        openArticle(secondArticleTitleXpath, searchLine);
+
+        //put 2nd article to 'Learning programming' list
+        addArticleToReadingList(folderName);
+
+        //Open list with two articles
+        waitForElementAndClick(
+                By.xpath("//android.widget.FrameLayout[@content-desc='My lists']"),
+                "Unable to locate 'My lists' navigation button",
+                5
+        );
+
+        waitForElementAndClick(
+                By.xpath("//android.widget.TextView[@resource-id='org.wikipedia:id/item_title'][@text='" + folderName + "']"),
+                "Unable to find created folder",
+                5
+        );
+
+        //assert that list contains two articles
+        Assert.assertEquals(folderName + " list contains wrong number of articles",
+                2,
+                getAmountOfElements(By.id("org.wikipedia:id/page_list_item_container")));
+
+        String articleToDeleteXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_title'][@text='" + articleIdentifier + "']";
+
+        swipeElementLeft(
+                By.xpath(articleToDeleteXpath),
+                "Unable to find saved article"
+        );
+
+        //assert that one article is still in the list
+        Assert.assertEquals(folderName + " list contains wrong number of articles",
+                1,
+                getAmountOfElements(By.id("org.wikipedia:id/page_list_item_container")));
+
+        //assert article title
+        String expectedArticleTitle = "Java (programming language)";
+        waitForElementAndClick(
+                By.xpath("//*[@text='" + expectedArticleTitle + "']"),
+                "Unable to find first article in the list after second one was deleted",
+                15
+        );
+        System.out.println("click on " + expectedArticleTitle);
+
+        String actualArticleTitle = waitForElementAndGetAttribute(
+                By.id("org.wikipedia:id/view_page_title_text"),
+                "text",
+                "Unable to find article title",
+                15
+        );
+
+        Assert.assertEquals("Actual article title differs from expected one",
+                expectedArticleTitle,
+                actualArticleTitle
+        );
+    }
+
     private int getSearchResultsCount(List<WebElement> list) {
         return list.size();
     }
@@ -550,6 +631,22 @@ public class FirstTest {
         );
     }
 
+    private void search(String keyWord) {
+        enterSearchKeyWord(keyWord);
+
+        //get search results
+        String listOfSearchResultsXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_title']";
+        waitForListOfElementsToBePresent(
+                By.xpath(listOfSearchResultsXpath),
+                "Unable to locate search results list",
+                5
+        );
+
+        //verify that search results list is not empty
+        Assert.assertTrue("List is empty",
+                getAmountOfElements(By.xpath(listOfSearchResultsXpath)) > 0);
+    }
+
     private List<WebElement> executeSearch(String keyWord) {
         enterSearchKeyWord(keyWord);
 
@@ -566,6 +663,84 @@ public class FirstTest {
                 getSearchResultsCount(listOfSearchResults) > 0);
 
         return listOfSearchResults;
+    }
+
+    private void openArticle(String articleTitleXpath, String searchLine) {
+        String titleText = waitForElementAndGetAttribute(
+                By.xpath(articleTitleXpath),
+                "text",
+                "",
+                5
+        );
+
+        waitForElementAndClick(
+                By.xpath(articleTitleXpath),
+                "Unable to find '" + titleText + "' topic searching by '" + searchLine + "'",
+                15
+        );
+
+        waitForElementToBePresent(
+                By.id("org.wikipedia:id/view_page_title_text"),
+                "Unable to find article title",
+                20
+        );
+    }
+
+    private void addArticleToReadingList(String folderName) {
+        waitForElementAndClick(
+                By.xpath("//android.widget.ImageView[@content-desc='More options']"),
+                "Unable to find 'More options' link",
+                5
+        );
+
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/title'][@text='Add to reading list']"),
+                "Unable to select 'Add to reading list' context menu option",
+                5
+        );
+
+        //user has no list with given name, create new one
+        if (isElementPresent(By.id("org.wikipedia:id/onboarding_button"))) {
+            waitForElementAndClick(
+                By.id("org.wikipedia:id/onboarding_button"),
+                "Unable to locate 'GOT IT' tip overlay",
+                5
+            );
+
+            waitForElementAndClear(
+                By.id("org.wikipedia:id/text_input"),
+                "Unable to find input to set articles folder name",
+                5
+            );
+
+            waitForElementAndSendKeys(
+                By.id("org.wikipedia:id/text_input"),
+                folderName,
+                "Unable to put text into articles folder input",
+                5
+            );
+
+            waitForElementAndClick(
+                By.xpath("//*[@text='OK']"),
+                "Unable to press OK button",
+                5
+            );
+        }
+
+        //user has already created the folder, just select it
+        if(isElementPresent(By.xpath("//*[@resource-id='org.wikipedia:id/item_title'][@text='" + folderName + "']"))) {
+            waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/item_title'][@text='" + folderName + "']"),
+                "Unable to add second article to " + folderName + " list",
+                5
+            );
+        }
+
+        waitForElementAndClick(
+                By.xpath("//*[@content-desc='Navigate up']"),
+                "Unable to close article - missing X link",
+                5
+        );
     }
 
     protected void swipeUp(int timeOfSwipe) {
