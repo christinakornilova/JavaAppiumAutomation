@@ -528,14 +528,14 @@ public class FirstTest {
         validateElementText(element, expectedText);
     }
 
-    private List<WebElement> executeSearch(String searchWord) {
+    private void enterSearchKeyWord(String keyWord) {
         waitForElementAndClick(By.id("org.wikipedia:id/search_container"),
                 "Unable to locate 'Search Wikipedia' input",
                 5
         );
 
         waitForElementAndSendKeys(By.xpath("//*[contains(@text,'Search…')]"),
-                searchWord,
+                keyWord,
                 "Unable to locate search input",
                 5
         );
@@ -548,6 +548,10 @@ public class FirstTest {
                 "Unable to locate search results",
                 15
         );
+    }
+
+    private List<WebElement> executeSearch(String keyWord) {
+        enterSearchKeyWord(keyWord);
 
         //get search results to list
         String listOfSearchResultsXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_title']";
