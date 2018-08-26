@@ -35,11 +35,7 @@ public class FirstTest {
 
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
 
-        System.out.println("Screen orientation is : " + driver.getOrientation().toString());
-        if (driver.getOrientation() != ScreenOrientation.PORTRAIT) {
-            System.out.println("Rotating the screen");
-            driver.rotate(ScreenOrientation.PORTRAIT);
-        }
+        driver.rotate(ScreenOrientation.PORTRAIT);
     }
 
     @After
