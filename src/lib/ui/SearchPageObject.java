@@ -18,7 +18,8 @@ public class SearchPageObject extends MainPageObject {
             SEARCH_RESULTS_XPATH = "//*[@resource-id='org.wikipedia:id/search_results_list']",
             SEARCH_RESULTS_LIST_ELEMENT_XPATH = "//*[@resource-id='org.wikipedia:id/page_list_item_title']",
             EMPTY_SEARCH_RESULT_ELEMENT_XPATH = "//*[@resource-id='org.wikipedia:id/search_empty_container']",
-            SEARCH_ELEMENT_DEFAULT_TEXT_ID = "org.wikipedia:id/search_src_text";
+            SEARCH_ELEMENT_DEFAULT_TEXT_ID = "org.wikipedia:id/search_src_text",
+            SEARCH_RESULT_ELEMENT_BY_TITLE_AND_DESCRIPTION_XPATH_TPL = "//*[@resource-id='org.wikipedia:id/page_list_item_container']/android.widget.LinearLayout[child::android.widget.TextView[@text='{ARTICLE_TITLE}'] and child::android.widget.TextView[@text='{ARTICLE_DESCRIPTION}']]";
 
     public SearchPageObject(AppiumDriver driver) {
         super(driver);
@@ -27,6 +28,12 @@ public class SearchPageObject extends MainPageObject {
     /* TEMPLATES METHODS */
     private static String getResultSearchElement(String substring) {
         return SEARCH_RESULT_BY_SUBSTRING_XPATH_TPL.replace("{SUBSTRING}", substring);
+    }
+
+    private static String getResultSearchElementXpathByTitleAndDescription(String title, String description) {
+        String xpath = SEARCH_RESULT_ELEMENT_BY_TITLE_AND_DESCRIPTION_XPATH_TPL.replace("{ARTICLE_TITLE}", title);
+        xpath = xpath.replace("{ARTICLE_DESCRIPTION}", description);
+        return xpath;
     }
     /* TEMPLATES METHODS */
 
@@ -115,6 +122,19 @@ public class SearchPageObject extends MainPageObject {
         enterSearchKeyWord(keyWord);
         //get search results
         return this.waitForListOfElementsToBePresent(By.xpath(SEARCH_RESULTS_LIST_ELEMENT_XPATH), "Unable to locate search results list", 5);
+    }
+
+    public WebElement waitForElementByTitleAndDescription(String title, String description) {
+        try {
+            return this.waitForElementToBePresent(
+                    By.xpath(getResultSearchElementXpathByTitleAndDescription(title, description)),
+                    "Unable to locate article in search results with title " + title + " and description " + description,
+                    5
+            );
+        } catch (Exception e) {
+            e.getMessage().toString();
+        }
+        return null;
     }
 
 }

@@ -100,4 +100,53 @@ public class SearchTests extends CoreTestCase {
         }
     }
 
+    @Test
+    public void testPositiveSearchArticleByTitleAndDescription() {
+        String title = "Danny Worsnop";
+        String description = "The lead singer of Asking Alexandria and We Are Harlot.";
+        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        searchPageObject.search(title);
+        //check first result
+        assertTrue("Unable to locate search result article via title '" + title + "' and description '" + description + "'",
+                searchPageObject.isElementPresent(
+                        searchPageObject.waitForElementByTitleAndDescription(title, description),
+                        5
+                )
+        );
+
+        //check second result
+        title = "We Are Harlot";
+        description = "American hard rock supergroup";
+        assertTrue("Unable to locate search result article via title '" + title + "' and description '" + description + "'",
+                searchPageObject.isElementPresent(
+                        searchPageObject.waitForElementByTitleAndDescription(title, description),
+                        5
+                )
+        );
+
+        //check third result
+        title = "We Are Harlot (album)";
+        description = "We Are Harlot (album)";
+        assertTrue("Unable to locate search result article via title '" + title + "' and description '" + description + "'",
+                searchPageObject.isElementPresent(
+                        searchPageObject.waitForElementByTitleAndDescription(title, description),
+                        5
+                )
+        );
+    }
+
+    @Test
+    public void testNegativeSearchArticleByTitleAndDescription() {
+        String title = "Asking Alexandria";
+        String description = "XYZ";
+        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        searchPageObject.search(title);
+        assertTrue("Unable to locate search result article via title '" + title + "' and description '" + description + "'",
+                searchPageObject.isElementPresent(
+                        searchPageObject.waitForElementByTitleAndDescription(title, description),
+                        5
+                )
+        );
+    }
+
 }

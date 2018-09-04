@@ -67,6 +67,16 @@ public class MainPageObject {
         return driver.findElements(by).size() == 1;
     }
 
+    public boolean isElementPresent(WebElement element, long timeOutInSeconds) {
+        try {
+            new WebDriverWait(driver, timeOutInSeconds).until(ExpectedConditions.elementToBeClickable(element));
+            return true;
+        } catch (Exception e) {
+            e.toString();
+        }
+        return false;
+    }
+
     //more general methods to compare any element text attribute value with given expected text
     //and mark test as 'failed' if text comparison fails
     public void validateElementText(WebElement element, String expectedText) {
