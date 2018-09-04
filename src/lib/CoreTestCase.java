@@ -49,4 +49,12 @@ public class CoreTestCase extends TestCase {
         driver.runAppInBackground(seconds);
     }
 
+    protected void hideKeyboard() {
+        driver.hideKeyboard();
+    }
+
+    protected void resetApp() {
+        driver.resetApp();
+    }
+
 }

@@ -7,7 +7,8 @@ public class MyListsPageObject extends MainPageObject {
 
     private static final String
             FOLDER_BY_NAME_XPATH_TPL = "//*[@text='{FOLDER_NAME}']",
-            SWIPE_BY_ARTICLE_XPATH_TPL = "//*[@text='{TITLE}']";
+            SWIPE_BY_ARTICLE_XPATH_TPL = "//*[@text='{TITLE}']",
+            MY_READING_LIST_ITEMS_XPATH = "org.wikipedia:id/page_list_item_container";
 
     public MyListsPageObject(AppiumDriver driver) {
         super(driver);
@@ -21,7 +22,7 @@ public class MyListsPageObject extends MainPageObject {
         return SWIPE_BY_ARTICLE_XPATH_TPL.replace("{TITLE}", articleTitle);
     }
 
-    public void openFolderByName(String folderName) {
+    public void openReadingListByName(String folderName) {
         this.waitForElementAndClick(
                 By.xpath(getFolderXpathByName(folderName)),
                 "Unable to find created folder by name " + folderName,
@@ -55,4 +56,13 @@ public class MyListsPageObject extends MainPageObject {
                 5
         );
     }
+
+    public int getAmountOfArticlesInTheReadingList() {
+        return this.getAmountOfElements(By.id(MY_READING_LIST_ITEMS_XPATH));
+    }
+
+    public void navigateToArticlesPage(String articleTitle) {
+        this.waitForElementAndClick(By.xpath(getSavedArticleXpathByTitle(articleTitle)), "Unable to click on first article title in the list after second one was deleted", 15);
+    }
+
 }

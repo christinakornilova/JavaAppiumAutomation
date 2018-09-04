@@ -67,20 +67,6 @@ public class MainPageObject {
         return driver.findElements(by).size() == 1;
     }
 
-    /*
-    Написать функцию, которая проверяет наличие текста “Search…” в строке поиска перед вводом текста
-     и помечает тест упавшим, если такого текста нет.
-     */
-    public void validateSearchElementText() {
-        WebElement searchElement = waitForElementToBePresent(By.id("org.wikipedia:id/search_src_text"),
-                "Unable to locate 'Search...' input",
-                5);
-        Assert.assertEquals("Unexpected 'Search...' field default text is displayed",
-                "Search…",
-                searchElement.getAttribute("text")
-        );
-    }
-
     //more general methods to compare any element text attribute value with given expected text
     //and mark test as 'failed' if text comparison fails
     public void validateElementText(WebElement element, String expectedText) {
@@ -92,140 +78,6 @@ public class MainPageObject {
     public void waitForElementAndValidateText(By by, String errorMessage, long timeoutInSeconds, String expectedText) {
         WebElement element = waitForElementToBePresent(by, errorMessage, timeoutInSeconds);
         validateElementText(element, expectedText);
-    }
-
-    public void enterSearchKeyWord(String keyWord) {
-        waitForElementAndClick(By.id("org.wikipedia:id/search_container"),
-                "Unable to locate 'Search Wikipedia' input",
-                5
-        );
-
-        waitForElementAndSendKeys(By.xpath("//*[contains(@text,'Search…')]"),
-                keyWord,
-                "Unable to locate search input",
-                5
-        );
-
-        driver.hideKeyboard();
-
-        //wait for search results
-        waitForElementToBePresent(
-                By.xpath("//*[@resource-id='org.wikipedia:id/search_results_list']"),
-                "Unable to locate search results",
-                15
-        );
-    }
-
-    public void search(String keyWord) {
-        enterSearchKeyWord(keyWord);
-
-        //get search results
-        String listOfSearchResultsXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_title']";
-        waitForListOfElementsToBePresent(
-                By.xpath(listOfSearchResultsXpath),
-                "Unable to locate search results list",
-                5
-        );
-
-        //verify that search results list is not empty
-        Assert.assertTrue("List is empty",
-                getAmountOfElements(By.xpath(listOfSearchResultsXpath)) > 0);
-    }
-
-    public List<WebElement> executeSearch(String keyWord) {
-        enterSearchKeyWord(keyWord);
-
-        //get search results to list
-        String listOfSearchResultsXpath = "//*[@resource-id='org.wikipedia:id/page_list_item_title']";
-        List<WebElement> listOfSearchResults = waitForListOfElementsToBePresent(
-                By.xpath(listOfSearchResultsXpath),
-                "Unable to locate search results list",
-                5
-        );
-
-        //verify that search results list is not empty
-        Assert.assertTrue("List is empty",
-                getSearchResultsCount(listOfSearchResults) > 0);
-
-        return listOfSearchResults;
-    }
-
-    public void openArticle(String articleTitleXpath, String searchLine) {
-        String titleText = waitForElementAndGetAttribute(
-                By.xpath(articleTitleXpath),
-                "text",
-                "",
-                5
-        );
-
-        waitForElementAndClick(
-                By.xpath(articleTitleXpath),
-                "Unable to find '" + titleText + "' topic searching by '" + searchLine + "'",
-                15
-        );
-
-        waitForElementToBePresent(
-                By.id("org.wikipedia:id/view_page_title_text"),
-                "Unable to find article title",
-                20
-        );
-    }
-
-    public void addArticleToReadingList(String folderName) {
-        waitForElementAndClick(
-                By.xpath("//android.widget.ImageView[@content-desc='More options']"),
-                "Unable to find 'More options' link",
-                5
-        );
-
-        waitForElementAndClick(
-                By.xpath("//*[@resource-id='org.wikipedia:id/title'][@text='Add to reading list']"),
-                "Unable to select 'Add to reading list' context menu option",
-                5
-        );
-
-        //user has no list with given name, create new one
-        if (isElementPresent(By.id("org.wikipedia:id/onboarding_button"))) {
-            waitForElementAndClick(
-                    By.id("org.wikipedia:id/onboarding_button"),
-                    "Unable to locate 'GOT IT' tip overlay",
-                    5
-            );
-
-            waitForElementAndClear(
-                    By.id("org.wikipedia:id/text_input"),
-                    "Unable to find input to set articles folder name",
-                    5
-            );
-
-            waitForElementAndSendKeys(
-                    By.id("org.wikipedia:id/text_input"),
-                    folderName,
-                    "Unable to put text into articles folder input",
-                    5
-            );
-
-            waitForElementAndClick(
-                    By.xpath("//*[@text='OK']"),
-                    "Unable to press OK button",
-                    5
-            );
-        }
-
-        //user has already created the folder, just select it
-        if(isElementPresent(By.xpath("//*[@resource-id='org.wikipedia:id/item_title'][@text='" + folderName + "']"))) {
-            waitForElementAndClick(
-                    By.xpath("//*[@resource-id='org.wikipedia:id/item_title'][@text='" + folderName + "']"),
-                    "Unable to add second article to " + folderName + " list",
-                    5
-            );
-        }
-
-        waitForElementAndClick(
-                By.xpath("//*[@content-desc='Navigate up']"),
-                "Unable to close article - missing X link",
-                5
-        );
     }
 
     public void swipeUp(int timeOfSwipe) {
@@ -292,6 +144,14 @@ public class MainPageObject {
         if(getAmountOfElements(by) == 0) {
             String defaultMessage = "An element '" + by.toString() + "' supposed to be present";
             throw new AssertionError(defaultMessage + " " + errorMessage);
+        }
+    }
+
+    public void assertElementAttributeValue(By by, String attribute, String expectedValue, String errorMessage, long timeoutInSeconds) {
+        String actualValue = waitForElementAndGetAttribute(by, attribute, "Unable to locate element by " + by.toString(), timeoutInSeconds);
+        if(!actualValue.equals(expectedValue)) {
+            String defaultMessage = "An element's attribute '" + attribute + "' supposed to be equals to value " + expectedValue + " but actual value is " + actualValue + " ";
+            throw new AssertionError(defaultMessage + errorMessage);
         }
     }
 

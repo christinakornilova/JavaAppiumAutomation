@@ -38,5 +38,16 @@ public class ArticleTests extends CoreTestCase {
 
     }
 
+    @Test
+    public void testArticleTitlePresence() {
+        //ex6
+        String keyWord = "Three Days Grace";
+        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        searchPageObject.search(keyWord);
+        searchPageObject.clickByArticleWithSubstring("Canadian band");
+
+        ArticlePageObject articlePageObject = new ArticlePageObject(driver);
+        articlePageObject.assertArticleTitlePresence();
+    }
 
 }

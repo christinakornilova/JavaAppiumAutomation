@@ -3,13 +3,23 @@ package tests;
 import lib.CoreTestCase;
 import lib.ui.SearchPageObject;
 import org.junit.Test;
+import org.openqa.selenium.WebElement;
+
+import java.util.List;
 
 public class SearchTests extends CoreTestCase {
+
+    private List<WebElement> getSearchResultsByKeyword(String keyword, SearchPageObject searchPageObject) {
+        List<WebElement> listOfSearchResults = searchPageObject.search(keyword);
+        //verify that search results list is not empty
+        assertTrue("List is empty",
+                searchPageObject.getSearchResultsCount() > 0);
+        return listOfSearchResults;
+    }
 
     @Test
     public void testSearch() {
         SearchPageObject searchPageObject = new SearchPageObject(driver);
-
         searchPageObject.initSearchElement();
         searchPageObject.typeSearchLine("Java");
         searchPageObject.waitForSearchResult("Object-oriented programming language");
@@ -18,12 +28,38 @@ public class SearchTests extends CoreTestCase {
     @Test
     public void testCancelSearch() {
         SearchPageObject searchPageObject = new SearchPageObject(driver);
-
         searchPageObject.initSearchElement();
-//        searchPageObject.typeSearchLine("Java");
         searchPageObject.waitForCancelButtonToAppear();
         searchPageObject.clickCancelSearch();
         searchPageObject.waitForCancelButtonToDisappear();
+    }
+
+    @Test
+    public void testSearchResultCancellation() {
+        //ex3
+        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        searchPageObject.initSearchElement();
+        searchPageObject.typeSearchLine("Java");
+
+        //wait for search results
+        searchPageObject.waitForSearchResultsToAppear();
+
+        //verify that search results list is not empty
+        assertTrue("Search results list is empty", searchPageObject.getSearchResultsCount() > 0);
+
+        //cancel search results
+        searchPageObject.clickCancelSearch();
+
+        hideKeyboard();
+
+        //check that Search... element contains default text now
+        searchPageObject.validateDefaultSearchElementText();
+
+        //assert that no search results displayed
+        assertFalse("Search results are still present on page", searchPageObject.isSearchResultsListPresent());
+
+        //verify that empty search result is displayed on page now
+        assertTrue("Unable to locate empty search result list element", searchPageObject.isEmptySearchResultDisplayed());
     }
 
     @Test
@@ -32,7 +68,7 @@ public class SearchTests extends CoreTestCase {
         SearchPageObject searchPageObject = new SearchPageObject(driver);
         searchPageObject.initSearchElement();
         searchPageObject.typeSearchLine(searchLine);
-        int amountOfSearchResults = searchPageObject.getamountOfFoundArticles();
+        int amountOfSearchResults = searchPageObject.getAmountOfFoundArticles();
 
         assertTrue("Too few results were found!",
                 amountOfSearchResults > 0);
@@ -47,4 +83,21 @@ public class SearchTests extends CoreTestCase {
         searchPageObject.waitForEmptyResultsLabel();
         searchPageObject.assertNoSearchResults();
     }
+
+    @Test
+    public void testSearchResultsValidation() {
+        //ex4*
+        String keyWord = "Java";
+
+        //fill the list with search results
+        List<WebElement> listOfSearchResults = getSearchResultsByKeyword(keyWord, new SearchPageObject(driver));
+
+        //check that each search result contains given word
+        for(WebElement element : listOfSearchResults) {
+            assertTrue("Search line does not contain appropriate word " + keyWord,
+                    element.getText().toLowerCase().contains(keyWord.toLowerCase())
+            );
+        }
+    }
+
 }
