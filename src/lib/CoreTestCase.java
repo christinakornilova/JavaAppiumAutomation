@@ -9,6 +9,9 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import java.net.URL;
 
 public class CoreTestCase extends TestCase {
+    private final static String platform = System.getenv("PLATFORM");
+    private final static String PLATFORM_IOS = "ios";
+    private final static String PLATFORM_ANDROID = "android";
 
     protected AppiumDriver driver;
     private static String appiumUrl = "http://127.0.0.1:4723/wd/hub";
@@ -17,16 +20,7 @@ public class CoreTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-
-        capabilities.setCapability("platformName", "Android");
-        capabilities.setCapability("deviceName", "AndroidTestDevice");
-        capabilities.setCapability("platformVersion", "8.0");
-        capabilities.setCapability("automationName", "Appium");
-        capabilities.setCapability("appPackage", "org.wikipedia");
-        capabilities.setCapability("appActivity", ".main.MainActivity");
-        capabilities.setCapability("app", "/Users/Christina/Desktop/JavaAppiumAutomation/apks/org.wikipedia.apk");
-
+        DesiredCapabilities capabilities = this.getCapabilitiesByPlatformEnv();
         driver = new AndroidDriver(new URL(appiumUrl), capabilities);
         this.rotateScreenPortrait();
     }
@@ -55,6 +49,29 @@ public class CoreTestCase extends TestCase {
 
     protected void resetApp() {
         driver.resetApp();
+    }
+
+    private DesiredCapabilities getCapabilitiesByPlatformEnv() throws Exception {
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        System.out.println("Platform: " + platform);
+        if(platform.equals(PLATFORM_ANDROID)) {
+            capabilities.setCapability("platformName", "Android");
+            capabilities.setCapability("deviceName", "AndroidTestDevice");
+            capabilities.setCapability("platformVersion", "8.0");
+            capabilities.setCapability("automationName", "Appium");
+            capabilities.setCapability("appPackage", "org.wikipedia");
+            capabilities.setCapability("appActivity", ".main.MainActivity");
+            capabilities.setCapability("app", "/Users/Christina/Desktop/JavaAppiumAutomation/apks/org.wikipedia.apk");
+        } else if(platform.equals(PLATFORM_IOS)) {
+            capabilities.setCapability("platformName", "iOS");
+            capabilities.setCapability("deviceName", "iPhone SE");
+            capabilities.setCapability("platformVersion", "11.3");
+            capabilities.setCapability("app", "/Users/Christina/Desktop/JavaAppiumAutomation/apks/Wikipedia.app");
+        } else {
+            throw new Exception("Unable to launch platform from env variable. Platform value: " + platform);
+        }
+
+        return capabilities;
     }
 
 }
