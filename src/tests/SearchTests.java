@@ -105,10 +105,12 @@ public class SearchTests extends CoreTestCase {
 
     @Test
     public void testPositiveSearchArticleByTitleAndDescription() {
+        //ex9, ex12
         String title = "Danny Worsnop";
         String description = "The lead singer of Asking Alexandria and We Are Harlot.";
-        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        SearchPageObject searchPageObject = SearchPageObjectFactory.get(driver);
         searchPageObject.search(title);
+
         //check first result
         assertTrue("Unable to locate search result article via title '" + title + "' and description '" + description + "'",
                 searchPageObject.isElementPresent(
@@ -117,7 +119,7 @@ public class SearchTests extends CoreTestCase {
                 )
         );
 
-        //check second result
+        //check  second  result
         title = "We Are Harlot";
         description = "American hard rock supergroup";
         assertTrue("Unable to locate search result article via title '" + title + "' and description '" + description + "'",
@@ -128,8 +130,8 @@ public class SearchTests extends CoreTestCase {
         );
 
         //check third result
-        title = "We Are Harlot (album)";
-        description = "We Are Harlot (album)";
+        title = "Asking Alexandria";
+        description = "British metalcore band";
         assertTrue("Unable to locate search result article via title '" + title + "' and description '" + description + "'",
                 searchPageObject.isElementPresent(
                         searchPageObject.waitForElementByTitleAndDescription(title, description),
@@ -138,13 +140,14 @@ public class SearchTests extends CoreTestCase {
         );
     }
 
+
     @Test
     public void testNegativeSearchArticleByTitleAndDescription() {
         String title = "Asking Alexandria";
         String description = "XYZ";
-        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        SearchPageObject searchPageObject = SearchPageObjectFactory.get(driver);
         searchPageObject.search(title);
-        assertTrue("Unable to locate search result article via title '" + title + "' and description '" + description + "'",
+        assertFalse("Was able to locate search result article using title '" + title + "' and WRONG description '" + description + "'",
                 searchPageObject.isElementPresent(
                         searchPageObject.waitForElementByTitleAndDescription(title, description),
                         5
