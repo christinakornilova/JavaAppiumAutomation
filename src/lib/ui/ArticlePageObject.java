@@ -1,56 +1,66 @@
 package lib.ui;
 
 import io.appium.java_client.AppiumDriver;
+import lib.Platform;
 import org.openqa.selenium.WebElement;
 
-public class ArticlePageObject extends MainPageObject{
-    public final static String
-            TITLE_ID = "id:org.wikipedia:id/view_page_title_text",
-            ARTICLE_TITLE_IDENTIFIER_XPATH_TPL = "xpath://*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='{ARTICLE_IDENTIFIER}']",
-            FOOTER_ELEMENT_XPATH = "xpath://*[@text='View page in browser']",
-            OPTIONS_BUTTON_XPATH = "xpath://android.widget.ImageView[@content-desc='More options']",
-            OPTIONS_ADD_TO_MY_LIST_BUTTON_XPATH = "xpath://*[@text='Add to reading list']",
-            ADD_TO_MY_LIST_OVERLAY_GOT_IT_ID = "id:org.wikipedia:id/onboarding_button",
-            MY_LIST_ITEM_IDENTIFIER_XPATH_TPL = "xpath://*[@resource-id='org.wikipedia:id/item_title'][@text='{FOLDER_NAME}']",
-            MY_LIST_NAME_INPUT_ID = "id:org.wikipedia:id/text_input",
-            MY_LIST_OK_BUTTON_XPATH = "xpath://*[@text='OK']",
-            CLOSE_ARTICLE_BUTTON_XPATH = "xpath://android.widget.ImageButton[@content-desc='Navigate up']";
+abstract public class ArticlePageObject extends MainPageObject{
+    protected static String
+            TITLE,
+            ARTICLE_TITLE_IDENTIFIER_TPL,
+            FOOTER_ELEMENT,
+            OPTIONS_BUTTON,
+            OPTIONS_ADD_TO_MY_LIST_BUTTON,
+            ADD_TO_MY_LIST_OVERLAY_GOT_IT,
+            MY_LIST_ITEM_IDENTIFIER_TPL,
+            MY_LIST_NAME_INPUT,
+            MY_LIST_OK_BUTTON,
+            CLOSE_ARTICLE_BUTTON;
 
     public ArticlePageObject(AppiumDriver driver) {
         super(driver);
     }
 
     private static String getArticleTitleXpath(String substring) {
-        return ARTICLE_TITLE_IDENTIFIER_XPATH_TPL.replace("{ARTICLE_IDENTIFIER}", substring);
+        return ARTICLE_TITLE_IDENTIFIER_TPL.replace("{ARTICLE_IDENTIFIER}", substring);
     }
 
     private static String getFolderNameXpath(String substring) {
-        return MY_LIST_ITEM_IDENTIFIER_XPATH_TPL.replace("{FOLDER_NAME}", substring);
+        return MY_LIST_ITEM_IDENTIFIER_TPL.replace("{FOLDER_NAME}", substring);
     }
 
     public WebElement waitForTitleElement() {
-        return this.waitForElementToBePresent(TITLE_ID, "Unable to locate article title on page", 15);
+        return this.waitForElementToBePresent(TITLE, "Unable to locate article title on page", 15);
     }
 
     public String getArticleTitle() {
-        return waitForTitleElement().getAttribute("text");
+        WebElement titleElement = waitForTitleElement();
+        if (Platform.getInstance().isAndroid()) {
+            return titleElement.getAttribute("text");
+        } else {
+            return titleElement.getAttribute("name");
+        }
     }
 
     public void swipeToFooter() {
-        swipeUpToFindElement(FOOTER_ELEMENT_XPATH, "Unable to find the end of the article", 20);
+        if (Platform.getInstance().isAndroid()) {
+            this.swipeUpToFindElement(FOOTER_ELEMENT, "Unable to find the end of the article", 50);
+        } else {
+            this.swipeUpTillElementAppear(FOOTER_ELEMENT, "Unable to find the end of the article", 50);
+        }
     }
 
     public void addArticleToReadingList(String folderName) {
-        this.waitForElementAndClick(OPTIONS_BUTTON_XPATH, "Unable to find 'More options' link", 5);
+        this.waitForElementAndClick(OPTIONS_BUTTON, "Unable to find 'More options' link", 5);
 
-        this.waitForElementAndClick(OPTIONS_ADD_TO_MY_LIST_BUTTON_XPATH, "Unable to select 'Add to reading list' context menu option", 5);
+        this.waitForElementAndClick(OPTIONS_ADD_TO_MY_LIST_BUTTON, "Unable to select 'Add to reading list' context menu option", 5);
 
         //user has no list with given name, create new one
-        if (this.isElementPresent(ADD_TO_MY_LIST_OVERLAY_GOT_IT_ID)) {
-            this.waitForElementAndClick(ADD_TO_MY_LIST_OVERLAY_GOT_IT_ID, "Unable to locate 'GOT IT' tip overlay", 5);
-            this.waitForElementAndClear(MY_LIST_NAME_INPUT_ID, "Unable to find input to set articles folder name", 5);
-            this.waitForElementAndSendKeys(MY_LIST_NAME_INPUT_ID, folderName, "Unable to put text into articles folder input", 5);
-            this.waitForElementAndClick(MY_LIST_OK_BUTTON_XPATH, "Unable to press OK button", 5);
+        if (this.isElementPresent(ADD_TO_MY_LIST_OVERLAY_GOT_IT)) {
+            this.waitForElementAndClick(ADD_TO_MY_LIST_OVERLAY_GOT_IT, "Unable to locate 'GOT IT' tip overlay", 5);
+            this.waitForElementAndClear(MY_LIST_NAME_INPUT, "Unable to find input to set articles folder name", 5);
+            this.waitForElementAndSendKeys(MY_LIST_NAME_INPUT, folderName, "Unable to put text into articles folder input", 5);
+            this.waitForElementAndClick(MY_LIST_OK_BUTTON, "Unable to press OK button", 5);
         }
         //user has already created the folder, just select it
         String folderNameXpath = getFolderNameXpath(folderName);
@@ -58,14 +68,21 @@ public class ArticlePageObject extends MainPageObject{
             this.waitForElementAndClick(folderNameXpath, "Unable to add second article to " + folderName + " list", 5);
         }
 
-        this.waitForElementAndClick(CLOSE_ARTICLE_BUTTON_XPATH, "Unable to close article - missing X link", 5);
+        this.waitForElementAndClick(CLOSE_ARTICLE_BUTTON, "Unable to close article - missing X link", 5);
+    }
+
+    public void addArticleToMySaved() {
+        this.waitForElementAndClick(OPTIONS_ADD_TO_MY_LIST_BUTTON, "Unable to find option to add article to reading list", 5);
+        if (this.isElementPresent(ADD_TO_MY_LIST_OVERLAY_GOT_IT)) {
+            this.waitForElementAndClick(ADD_TO_MY_LIST_OVERLAY_GOT_IT, "Unable to locate 'X' button on 'Sync...' dialog", 5);
+        }
     }
 
     public void closeArticle() {
-        this.waitForElementAndClick(CLOSE_ARTICLE_BUTTON_XPATH, "Unable to close article - missing X link", 5);
+        this.waitForElementAndClick(CLOSE_ARTICLE_BUTTON, "Unable to close article - missing X link", 5);
     }
 
     public void assertArticleTitlePresence() {
-        this.assertElementPresent(TITLE_ID, " : unable to locate article title");
+        this.assertElementPresent(TITLE, " : unable to locate article title");
     }
 }

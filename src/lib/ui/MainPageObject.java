@@ -2,6 +2,7 @@ package lib.ui;
 
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.TouchAction;
+import lib.Platform;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
@@ -125,6 +126,39 @@ public class MainPageObject {
         }
     }
 
+    public void swipeUpTillElementAppear(String locator, String errorMessage, int maxSwipes) {
+        int alreadySwiped = 0;
+        while(!this.isElementLocatedOnTheScreen(locator)) {
+            if(alreadySwiped > maxSwipes) {
+                Assert.assertTrue(errorMessage, this.isElementLocatedOnTheScreen(locator));
+                return;
+            }
+            swipeUpQuick();
+            ++alreadySwiped;
+        }
+    }
+
+    public boolean isElementLocatedOnTheScreen(String locator) {
+        int elementLocationByY = this.waitForElementToBePresent(locator, "Unable to find element by locator " + locator, 1).getLocation().getY();
+        int screenSizeByY = driver.manage().window().getSize().getHeight();
+        return elementLocationByY < screenSizeByY;
+    }
+
+    public void clickElementToTheRightUpperCorner(String locator, String errorMessage) {
+        WebElement element = waitForElementToBePresent(locator + "/..", errorMessage, 10);
+        int rightX = element.getLocation().getX();
+        int upperY = element.getLocation().getY();
+        int lowerY = upperY + element.getSize().getHeight();
+        int middleY = (upperY + lowerY)/2;
+        int width = element.getSize().getWidth();
+
+        int pointToClickX = (rightX + width) - 3;
+        int pointToClickY = middleY;
+
+        TouchAction action = new TouchAction(driver);
+        action.tap(pointToClickX, pointToClickY).perform();
+    }
+
     public void  swipeElementLeft(String locator, String errorMessage) {
         WebElement element = waitForElementToBePresent(locator, errorMessage, 10);
 
@@ -135,12 +169,18 @@ public class MainPageObject {
         int middleY = (upperY + lowerY)/2;
 
         TouchAction action = new TouchAction(driver);
-        action
-                .press(leftX, middleY)
-                .waitAction(300)
-                .moveTo(rightX, middleY)
-                .release()
-                .perform();
+        action.press(leftX, middleY);
+        action.waitAction(300);
+
+        if (Platform.getInstance().isAndroid()) {
+            action.moveTo(rightX, middleY);
+        } else {
+            int offsetX = -1 * (element.getSize().getWidth());
+            action.moveTo(offsetX, 0);
+        }
+
+        action.release();
+        action.perform();;
     }
 
     public int getAmountOfElements(String locator) {
