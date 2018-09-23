@@ -1,6 +1,7 @@
 package lib.ui;
 
 import io.appium.java_client.AppiumDriver;
+import lib.Platform;
 import org.openqa.selenium.WebElement;
 
 import java.util.List;
@@ -11,6 +12,7 @@ abstract public class SearchPageObject extends MainPageObject {
             SEARCH_INIT_ELEMENT,
             SEARCH_INPUT,
             SEARCH_CANCEL_BUTTON,
+            SEARCH_CLOSE_BUTTON,
             SEARCH_RESULT_BY_SUBSTRING_TPL,
             SEARCH_RESULT_ELEMENT,
             SEARCH_EMPTY_RESULT_LABEL,
@@ -50,7 +52,11 @@ abstract public class SearchPageObject extends MainPageObject {
     }
 
     public void clickCancelSearch() {
-        this.waitForElementAndClick(SEARCH_CANCEL_BUTTON, "Unable to locate and click search cancel 'X' button", 5);
+        this.waitForElementAndClick(SEARCH_CANCEL_BUTTON, "Unable to locate and click search cancel '(x)' button", 5);
+    }
+
+    public void clickCloseSearch() {
+        this.waitForElementAndClick(SEARCH_CLOSE_BUTTON, "Unable to locate and click search cancel 'X' button", 5);
     }
 
     public void typeSearchLine(String searchLine) {
@@ -113,6 +119,11 @@ abstract public class SearchPageObject extends MainPageObject {
 
     public void enterSearchKeyWord(String keyWord) {
         this.initSearchElement();
+
+        if (Platform.getInstance().isIOS() && this.isElementPresent(SEARCH_CANCEL_BUTTON)) {
+            this.clickCancelSearch();
+        }
+
         this.typeSearchLine(keyWord);
         this.waitForSearchResultsToAppear();
     }

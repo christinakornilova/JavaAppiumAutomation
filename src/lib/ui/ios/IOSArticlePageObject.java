@@ -7,7 +7,7 @@ public class IOSArticlePageObject extends ArticlePageObject {
 
     static {
         TITLE = "id:Java (programming language)";
-        ARTICLE_TITLE_IDENTIFIER_TPL = "xpath://*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='{ARTICLE_IDENTIFIER}']";
+        ARTICLE_IDENTIFIER_TPL = "id:{ARTICLE_IDENTIFIER}";
         FOOTER_ELEMENT = "id:View article in browser";
         OPTIONS_ADD_TO_MY_LIST_BUTTON = "id:Save for later";
         ADD_TO_MY_LIST_OVERLAY_GOT_IT = "id:places auth close";

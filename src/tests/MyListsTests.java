@@ -59,62 +59,86 @@ public class MyListsTests extends CoreTestCase {
 
     @Test
     public void testSaveTwoArticles() {
-        //ex5
+        //ex5, ex11
         String searchLine = "Java";
-        String folderName = "Learning programming";
 
         //Add first article to the list
         String articleIdentifier = "Object-oriented programming language";
 
-        resetApp();
+//        resetApp();
 
-        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        SearchPageObject searchPageObject = SearchPageObjectFactory.get(driver);
         getSearchResultsByKeyword(searchLine, searchPageObject);
         searchPageObject.clickByArticleWithSubstring(articleIdentifier);
 
-        ArticlePageObject articlePageObject = new ArticlePageObject(driver);
+        ArticlePageObject articlePageObject = ArticlePageObjectFactory.get(driver);
         articlePageObject.waitForTitleElement();
-        articlePageObject.addArticleToReadingList(folderName);
+        if (Platform.getInstance().isAndroid()) {
+            articlePageObject.addArticleToReadingList(folderName);
+        } else {
+            articlePageObject.addArticleToMySaved();
+        }
+        articlePageObject.closeArticle();
 
         //Add second article
         articleIdentifier = "Java (software platform)";
 
         searchPageObject.search(searchLine);
         searchPageObject.clickByArticleWithSubstring(articleIdentifier);
-        articlePageObject.waitForTitleElement();
+
+        if (Platform.getInstance().isAndroid()) {
+            articlePageObject.waitForTitleElement();
+        } else {
+            String id = "Set of several computer software products and specifications";
+            articlePageObject.waitForTitleElement(id);
+        }
 
         //put 2nd article to 'Learning programming' list
-        articlePageObject.addArticleToReadingList(folderName);
+        if (Platform.getInstance().isAndroid()) {
+            articlePageObject.addArticleToReadingList(folderName);
+        } else {
+            articlePageObject.addArticleToMySaved();
+        }
+        articlePageObject.closeArticle();
 
-        //Open list with two articles
-        NavigationUI navigationUI = new NavigationUI(driver);
+        //Open list with articles
+        NavigationUI navigationUI = NavigationUIObjectFactory.get(driver);
         navigationUI.clickMyLists();
 
-        MyListsPageObject myListsPageObject = new MyListsPageObject(driver);
-        myListsPageObject.openReadingListByName(folderName);
+        MyListsPageObject myListsPageObject = MyListsPageObjectFactory.get(driver);
+        if (Platform.getInstance().isAndroid()) {
+            myListsPageObject.openReadingListByName(folderName);
+        }
 
         //assert that list contains two articles
-        System.out.println("List size: " + myListsPageObject.getAmountOfArticlesInTheReadingList());
+        assertEquals("List contains wrong number of articles", 2, myListsPageObject.getAmountOfArticlesInTheReadingList());
         String articleToDeleteIdentifier = articleIdentifier;
+
+        //delete one article
         myListsPageObject.swipeArticleToDelete(articleToDeleteIdentifier);
 
         //assert that one article is still in the list
-        assertEquals(folderName + " list contains wrong number of articles",
-                1,
-                myListsPageObject.getAmountOfArticlesInTheReadingList());
+        String assertMessage;
+        if(Platform.getInstance().isAndroid()) {
+            assertMessage = folderName + " list contains wrong number of articles";
+        } else {
+            assertMessage = "Saved list contains wrong number of articles";
+        }
+        assertEquals(assertMessage, 1, myListsPageObject.getAmountOfArticlesInTheReadingList());
 
-        //assert article title
+        //assert article title/description
         String expectedArticleTitle = "Java (programming language)";
+        String expectedArticleDesc = "Object-oriented programming language";
 
         myListsPageObject.navigateToArticlesPage(expectedArticleTitle);
-        System.out.println("Click on " + expectedArticleTitle);
 
-        String actualArticleTitle = articlePageObject.getArticleTitle();
-
-        assertEquals("Actual article title differs from expected one",
-                expectedArticleTitle,
-                actualArticleTitle
-        );
+        if(Platform.getInstance().isAndroid()) {
+            String actualArticleTitle = articlePageObject.getArticleTitle();
+            assertEquals("Actual article description differs from expected one", expectedArticleTitle, actualArticleTitle);
+        } else {
+            String actualArticleDesc = articlePageObject.getArticleDesc(expectedArticleDesc);
+            assertEquals("Actual article description differs from expected one", expectedArticleDesc, actualArticleDesc);
+        }
     }
 
 }

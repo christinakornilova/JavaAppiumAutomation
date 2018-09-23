@@ -7,7 +7,7 @@ import org.openqa.selenium.WebElement;
 abstract public class ArticlePageObject extends MainPageObject{
     protected static String
             TITLE,
-            ARTICLE_TITLE_IDENTIFIER_TPL,
+            ARTICLE_IDENTIFIER_TPL,
             FOOTER_ELEMENT,
             OPTIONS_BUTTON,
             OPTIONS_ADD_TO_MY_LIST_BUTTON,
@@ -21,8 +21,8 @@ abstract public class ArticlePageObject extends MainPageObject{
         super(driver);
     }
 
-    private static String getArticleTitleXpath(String substring) {
-        return ARTICLE_TITLE_IDENTIFIER_TPL.replace("{ARTICLE_IDENTIFIER}", substring);
+    private static String getArticleIdentifierXpath(String substring) {
+        return ARTICLE_IDENTIFIER_TPL.replace("{ARTICLE_IDENTIFIER}", substring);
     }
 
     private static String getFolderNameXpath(String substring) {
@@ -31,6 +31,20 @@ abstract public class ArticlePageObject extends MainPageObject{
 
     public WebElement waitForTitleElement() {
         return this.waitForElementToBePresent(TITLE, "Unable to locate article title on page", 15);
+    }
+
+    public WebElement waitForTitleElement(String title) {
+        String locator =  getArticleIdentifierXpath(title);
+        return this.waitForElementToBePresent(locator, "Unable to locate article title on page", 15);
+    }
+
+    public String getArticleDesc(String desc) {
+        WebElement articleDesc = waitForTitleElement(desc);
+        if (Platform.getInstance().isAndroid()) {
+            return articleDesc.getAttribute("text");
+        } else {
+            return articleDesc.getAttribute("value");
+        }
     }
 
     public String getArticleTitle() {
